@@ -57,9 +57,16 @@ const getEntityColor = (type: Entity['type']) => {
     }
 };
 
-const isValidTextInput = (text: string): boolean => {
+const isValidTextInput = (text: string): { valid: boolean; message: string } => {
     // Must contain at least one letter to be valid.
-    return /[a-zA-Z]/.test(text);
+    if (!/[a-zA-Z]/.test(text)) {
+        return { valid: false, message: 'Invalid input. Please enter text that includes letters, not just numbers or symbols.' };
+    }
+    // Per user request, disallow certain punctuation to prevent potential issues.
+    if (/[.'"]/.test(text)) {
+        return { valid: false, message: 'Invalid input. The input must not include full stops and inverted commas.' };
+    }
+    return { valid: true, message: '' };
 };
 
 
@@ -583,10 +590,12 @@ const App: React.FC = () => {
     const handleAnalyze = useCallback(async (input: string | string[]) => {
         const texts = Array.isArray(input) ? input.slice(0, 10) : [input];
 
-        const invalidTexts = texts.filter(text => !isValidTextInput(text));
-        if (invalidTexts.length > 0) {
-            setApiStatus({ status: 'error', message: 'Invalid input. Please enter text that includes letters, not just numbers or symbols.' });
-            return;
+        for (const text of texts) {
+            const validation = isValidTextInput(text);
+            if (!validation.valid) {
+                setApiStatus({ status: 'error', message: validation.message });
+                return;
+            }
         }
 
         const analysesToRun = texts.length;
@@ -628,8 +637,15 @@ const App: React.FC = () => {
              return;
         }
 
-        if (!isValidTextInput(textA) || !isValidTextInput(textB)) {
-             setApiStatus({ status: 'error', message: 'Invalid input. Please ensure both texts include letters.' });
+        const validationA = isValidTextInput(textA);
+        if (!validationA.valid) {
+             setApiStatus({ status: 'error', message: `Text A: ${validationA.message}` });
+             return;
+        }
+
+        const validationB = isValidTextInput(textB);
+        if (!validationB.valid) {
+             setApiStatus({ status: 'error', message: `Text B: ${validationB.message}` });
              return;
         }
 
