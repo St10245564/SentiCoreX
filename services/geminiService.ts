@@ -75,17 +75,15 @@ const createFallbackAnalysis = (text: string): SentimentAnalysisResult => {
     };
 };
 
-const escapeForPrompt = (text: string) => text.replace(/"/g, '\\"');
 
 export const analyzeSentiment = async (text: string): Promise<SentimentAnalysisResult> => {
   try {
     const ai = getAiClient();
-    const escapedText = escapeForPrompt(text);
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: `Analyze the sentiment of the following text, and also provide a breakdown of sentiment for each sentence.
-Text: "${escapedText}"`,
+Text: "${text}"`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -160,7 +158,6 @@ Text: "${escapedText}"`,
 export const getMoodEnhancers = async (sentiment: Sentiment, text: string): Promise<MoodEnhancerResult> => {
     try {
         const ai = getAiClient();
-        const escapedText = escapeForPrompt(text.substring(0, 500));
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `The user's text has been analyzed with a '${sentiment}' sentiment. 
@@ -168,7 +165,7 @@ export const getMoodEnhancers = async (sentiment: Sentiment, text: string): Prom
             1. A short, single-sentence quote or poetic line that resonates with this mood.
             2. A music playlist suggestion (e.g., "Uplifting Pop Hits") with a direct search URL for YouTube Music or Spotify.
 
-            User's text for context: "${escapedText}..."
+            User's text for context: "${text.substring(0, 500)}..."
             `,
             config: {
                 responseMimeType: "application/json",
@@ -218,10 +215,9 @@ export const getMoodEnhancers = async (sentiment: Sentiment, text: string): Prom
 
 export const performAdvancedAnalysis = async (text: string): Promise<AdvancedAnalysisResult> => {
     const ai = getAiClient();
-    const escapedText = escapeForPrompt(text);
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: `Perform an advanced analysis of the following text, extracting key emotions, tones, and named entities. Text: "${escapedText}"`,
+        contents: `Perform an advanced analysis of the following text, extracting key emotions, tones, and named entities. Text: "${text}"`,
         config: {
             responseMimeType: "application/json",
             responseSchema: {
@@ -277,13 +273,11 @@ export const performAdvancedAnalysis = async (text: string): Promise<AdvancedAna
 export const compareSentiments = async (textA: string, textB: string): Promise<ComparativeAnalysisResult> => {
     try {
         const ai = getAiClient();
-        const escapedTextA = escapeForPrompt(textA);
-        const escapedTextB = escapeForPrompt(textB);
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Perform a comparative sentiment analysis on the following two texts.
-Text A: "${escapedTextA}"
-Text B: "${escapedTextB}"
+Text A: "${textA}"
+Text B: "${textB}"
 Analyze sentiment, confidence, scores, keywords (shared and unique), and provide a summary and emotional contrast.`,
             config: {
                 responseMimeType: "application/json",
@@ -350,6 +344,6 @@ Analyze sentiment, confidence, scores, keywords (shared and unique), and provide
         return JSON.parse(jsonString) as ComparativeAnalysisResult;
     } catch (error) {
         console.error("Gemini comparison API call failed:", error);
-        throw new Error("Failed to compare sentiments. The AI model may be having issues or the input contains unsupported formatting.");
+        throw new Error("Failed to compare sentiments. The AI model may be experiencing issues.");
     }
 };
