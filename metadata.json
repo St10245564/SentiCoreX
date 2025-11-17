@@ -1,0 +1,7 @@
+{
+  "name": "AI Sentiment Analysis Dashboard",
+  "description": "An advanced dashboard to analyze emotional tone in text using Google's Gemini API. Supports single text, file uploads, and batch processing with rich visualizations and data export options.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
